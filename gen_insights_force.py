@@ -264,11 +264,13 @@ def main():
         "bullets": bullets(k, bc, db)
     }
 
-    out_path = Path(args.out)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(
-        pack, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"wrote {args.out}")
+    # out_path = Path(args.out)
+    # out_path.parent.mkdir(parents=True, exist_ok=True)
+    # out_path.write_text(json.dumps(
+    #     pack, ensure_ascii=False, indent=2), encoding="utf-8")
+    # print(f"wrote {args.out}")
+
+    return pack
 
 
 if __name__ == "__main__":

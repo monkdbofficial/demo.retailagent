@@ -7,3 +7,6 @@ streamlit
 crewai 
 crewai-tools
 langchain
+langchain_ollama
+plotly
+watchdog
