@@ -6,3 +6,4 @@ opentelemetry-api
 streamlit
 crewai 
 crewai-tools
+langchain
