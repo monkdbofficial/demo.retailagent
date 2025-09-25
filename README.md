@@ -42,6 +42,12 @@ This shall trigger the watch and downstream agent orchestration logic which do t
 
 ---
 
+## Data Flow
+
+![Data flow](./assets/data_flow.gif)
+
+--- 
+
 ## 🛠️ Tech Stack  
 
 - **Languages:** Python  
