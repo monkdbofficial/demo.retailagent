@@ -67,6 +67,8 @@ This shall trigger the watch and downstream agent orchestration logic which do t
 
 - In this repo, update [config.ini](./config/config.ini) file located in config folder. Please ensure the IP address of `DB_HOST` variable is updated. It denotes the instance where MonkDB is installed. 
 
+- Provision an LLM model. We are using Mistral via Ollama (`ollama run mistral`).
+
 ```text
 [database]
 DB_HOST = xx.xx.xx.xxx
@@ -103,6 +105,16 @@ MONKDB_OTEL_ENABLED=false
 4. Open `streamlit_app.py` → interactive analytics dashboard  
 
 ---
+
+## Notes
+
+You may swap 
+
+- langchain with another agentic framework.
+- Streamlit with another frontend framework.
+- Mistral model with another LLM model which is a pre-requisite for agentic framework.
+
+--- 
 
 ## License
 
