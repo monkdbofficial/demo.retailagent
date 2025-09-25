@@ -23,6 +23,6 @@ Please ensure compliance with each license when using or redistributing this pro
 
 ## Data Attribution
 
-We have used Myntra's dataset which has been open sourced under **CC0: Public Domain**, and available in [Kaggle](https://www.kaggle.com/datasets/ronakbokaria/myntra-products-dataset/data).
+We have used Myntra's dataset which has been open sourced under **CC0: Public Domain**, and available in [Kaggle](https://www.opendatabay.com/data/consumer/5d27b685-bfed-40a1-b663-bed7e7b93f06).
 
 ---
