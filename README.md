@@ -53,6 +53,44 @@ This shall trigger the watch and downstream agent orchestration logic which do t
 
 ---
 
+---
+
+## Pre-requisites
+
+- Install and provision MonkDB as per its [documentation](https://github.com/monkdbofficial/monk-documentation/tree/main/documentation). 
+
+- Provision MonkDB's user using PSQL as highlighted in MonkDB's [documentation](https://github.com/monkdbofficial/monk-documentation/tree/main/documentation). 
+
+- In this repo, update [config.ini](./config/config.ini) file located in config folder. Please ensure the IP address of `DB_HOST` variable is updated. It denotes the instance where MonkDB is installed. 
+
+```text
+[database]
+DB_HOST = xx.xx.xx.xxx
+DB_PORT = 4200
+DB_USER = testuser
+DB_PASSWORD = testpassword
+DB_SCHEMA = trent
+TABLE_NAME = products
+```
+
+- Also, ensure `.env` is updated in the root of this repo with the correct IP address of MonkDB's host.
+
+```text
+MONKDB_HOST=xx.xx.xx.xxx
+MONKDB_PORT=4200
+MONKDB_USER=testuser
+MONKDB_PASSWORD=testpassword
+MONKDB_SCHEMA=trent
+MONKDB_API_PORT=4200
+
+# Optional OTEL configuration which can be enabled or disabled.
+MONKDB_OTEL_ENABLED=false
+```
+
+- As highlighted before, please create a virtual env and activate it before install requirements using pip. 
+
+---
+
 ## 📊 Example Workflow  
 
 1. Drop a new retail CSV into the `/csv_folder` folder  
