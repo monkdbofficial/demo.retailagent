@@ -46,6 +46,12 @@ This shall trigger the watch and downstream agent orchestration logic which do t
 
 ![Data flow](./assets/data_flow.png)
 
+As highlighted in the data flow diagram, watchdog triggers agents execution. 
+
+- **Upload agent**- It uploads the processed data to MonkDB.
+- **Generate Insights agent**- It generates the insights by querying the database using MonkDB's SQL via MCP in agent's tool interface. It is used to generate the dashboard pack.
+- **Deploy agent**- This agent deploys the pack to destination. 
+
 --- 
 
 ## 🛠️ Tech Stack  
