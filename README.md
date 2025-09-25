@@ -1,4 +1,4 @@
-# 🧠 Monk-RET  
+# 🧠 Agentic AI in Retail, Powered by MonkDB
 
 Monk-RET (**Monk Retail Insights Engine**) is an intelligent retail analytics platform powered by **MonkDB**, **MonkDB's MCP** **LangChain**, **Streamlit**, and modern AI/ML pipelines.  
 It helps businesses gain actionable insights from large-scale retail data by orchestrating data ingestion, processing, and visualization seamlessly.  
