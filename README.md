@@ -126,6 +126,17 @@ Run this below command to execute performance testing.
 python3 monkdb_pipeline_testrunner.py --csv datasets/_sample_products.csv --table trent.products --where "1=1" --parity-sample 200 --perf-repeats 20 --out-json reports/report.json --out-md reports/report.md
 ```
 
+| Argument        | Purpose                                                                                                                                                                                      | Example Value                   |
+|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| --csv           | Path to the source CSV file used as the “gold” reference for accuracy checks. The script computes KPIs (row counts, averages, discount bands, etc.) on this file and compares them to MonkDB query results. | datasets/_sample_products.csv   |
+| --table         | Fully-qualified database table name to query inside MonkDB. The test runner runs SELECTs on this table and compares them to the CSV-derived KPIs.                                            | trent.products                  |
+| --where         | Optional SQL WHERE clause applied to every database query. Lets you scope tests to a subset of rows (e.g., a specific brand or time range). "1=1" is the neutral default (no filtering).       | "1=1"                           |
+| --parity-sample | Number of rows to sample for row-parity testing. The script randomly picks up to this many primary-key combinations from the CSV and checks if they exist in the DB. Skipped if no primary key.| 200                             |
+| --perf-repeats  | Number of times to repeat each key query (KPIs, discount bands, brand share) for latency measurement. The script records P50, P95, and P99 response times across these runs.                 | 20                              |
+| --out-json      | Output path for the machine-readable report (JSON). Contains accuracy metrics, latency percentiles, and row-parity results.                                                                 | reports/report.json             |
+| --out-md        | Output path for the human-readable Markdown report. Summarises key accuracy and performance findings for easy sharing or inclusion in client documentation.                                 | reports/report.md               |
+
+
 This will execute our pipeline testrunner test script, and generate reports in reports folder.
 
 We have executed performance tests in the below instance (digital ocean)
