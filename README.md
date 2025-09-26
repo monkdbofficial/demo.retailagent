@@ -157,6 +157,15 @@ This means the latencies observed on DigitalOcean should be viewed as conservati
 
 ---
 
+## 🔒 Data Privacy & Compliance
+
+- **Public Data Source:** The dataset (Myntra Product Listings) is released under a CC0 Public Domain license and contains only publicly available product catalogue information—no personal or sensitive consumer data.
+- **Secure Credentials:** Database and API credentials are stored in `.env` and `config.ini`, never hard-coded or exposed in logs or the repository. This can secured even further by bringing in concepts like Hashicorp's Vault or such alternatives in production environment.
+- **Read-only Analytics:** All analytics operations use MonkDB's MCP SELECT-only interface; no user-identifiable or private data is written or modified.
+- **Logging Hygiene:** Application logs exclude secrets and comply with data minimisation best practices.
+
+---
+
 ## Notes
 
 You may swap 
