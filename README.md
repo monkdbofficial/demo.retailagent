@@ -128,6 +128,22 @@ python3 monkdb_pipeline_testrunner.py --csv datasets/_sample_products.csv --tabl
 
 This will execute our pipeline testrunner test script, and generate reports in reports folder.
 
+We have executed performance tests in the below instance (digital ocean)
+
+- **OS**: Ubuntu 25.04 x64
+- **vCPUs**: 4 vCPUs
+- **RAM/SSD**: 8GB / 240GB Disk
+- **Family**: General compute
+
+### Note
+
+Due to cost considerations, testing was conducted on a modest DigitalOcean droplet (4 vCPU / 8 GB RAM / 240 GB SSD). Consequently, the KPI, discount-band, and brand-share queries measured around 0.8–1.1 s P95.
+
+In production we recommend AWS m6in (or equivalent) instances. These are powered by 3rd-Gen Intel Xeon Scalable (“Ice Lake”) CPUs up to 3.5 GHz, with 200 Gbps networking and 80–100 Gbps EBS throughput, and scale to 128 vCPUs / 512 GiB RAM. Our enterprise MonkDB customers running similar analytics consistently achieve sub-300 ms P95 latencies on such hardware.
+
+This means the latencies observed on DigitalOcean should be viewed as conservative; significantly lower numbers are expected on production-grade instances.
+
+
 ---
 
 ## Notes
