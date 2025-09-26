@@ -118,6 +118,18 @@ MONKDB_OTEL_ENABLED=false
 
 ---
 
+## Performance Benchmark Test
+
+Run this below command to execute performance testing.
+
+```sh
+python3 monkdb_pipeline_testrunner.py --csv datasets/_sample_products.csv --table trent.products --where "1=1" --parity-sample 200 --perf-repeats 20 --out-json reports/report.json --out-md reports/report.md
+```
+
+This will execute our pipeline testrunner test script, and generate reports in reports folder.
+
+---
+
 ## Notes
 
 You may swap 
