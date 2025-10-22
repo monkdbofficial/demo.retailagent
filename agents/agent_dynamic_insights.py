@@ -5,6 +5,7 @@ from typing import Dict, List
 from langchain_ollama import ChatOllama
 from mcp_monkdb.mcp_server import run_select_query
 
+# Initialize LLM
 llm = ChatOllama(model="mistral")
 
 # --- simple SQL safety checks (PoC-grade) ---
@@ -70,37 +71,61 @@ RULES (strict):
 ]
     """
 
+    # --- Step 1: Query the LLM ---
     response = llm.invoke(prompt)
     text = (response.content or "").strip()
+
     print("\n=== AUTO-GENERATED INSIGHT PLAN (RAW) ===\n",
           text, "\n=========================================\n")
 
-    # Parse JSON
+    # --- Step 2: Parse JSON safely ---
+    plan = []
     try:
         plan = json.loads(text)
         if not isinstance(plan, list):
-            raise ValueError("Expected a JSON list")
+            raise ValueError("Expected a JSON list at top level")
     except Exception as e:
         print(f"⚠️ LLM response not valid JSON: {e}")
-        return {}
+        # attempt salvage using regex fallback
+        match = re.search(r"\[.*\]", text, re.S)
+        if match:
+            try:
+                plan = json.loads(match.group(0))
+            except Exception:
+                plan = []
+        if not plan:
+            print("⚠️ Could not recover any valid plan JSON.")
+            return {}
 
-    # Validate & execute
+    # --- Step 3: Validate & execute ---
     results = {}
     for item in plan:
         name = item.get("name", "unnamed")
         sql = item.get("sql", "")
+        if not sql:
+            continue
+
+        # quick repair for GROUP BY issues (like CrateDB error)
+        if "GROUP BY" in sql and "title" in sql and "SUM(" in sql and "product_id" in sql:
+            sql = re.sub(r"GROUP BY\s+\w+",
+                         "GROUP BY product_id, title, brand, price", sql)
+
         if not _is_safe_select(sql, table_name):
             print(f"⛔ Skipping unsafe or invalid SQL for {name}: {sql}")
             continue
+
         print(f"→ Running {name}: {sql}")
         try:
             df_res = pd.DataFrame(run_select_query(sql))
             results[name] = df_res
+
             try:
                 print(df_res.head(5).to_string(index=False))
             except Exception:
                 print(f"(rows: {len(df_res)})")
+
         except Exception as e:
             print(f"❌ Failed to execute {name}: {e}")
 
+    print(f"✅ Generated dynamic insights for {len(results)} metrics.")
     return results

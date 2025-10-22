@@ -9,50 +9,45 @@ import sys
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
-
-# MCP import (SELECT-only)
 from mcp_monkdb.mcp_server import run_select_query
 
-SCHEMA_TABLE = "trent.products"  # adjust if needed
+# === Imports for Agentic Reasoning Integration ===
+from agents.agent_dynamic_insights import dynamic_insights_from_schema
+from langchain_ollama import ChatOllama
 
-# ---------- Query helper (SELECT via MCP) ----------
-
+# -------------------------------------------------
+# CONFIG
+# -------------------------------------------------
 load_dotenv()
+SCHEMA_TABLE = "trent.products"
+TABLE_DDL = """
+CREATE TABLE trent.products (
+    product_id        LONG PRIMARY KEY,
+    style_id          INTEGER,
+    title             TEXT,
+    brand             TEXT,
+    price             DOUBLE,
+    mrp               DOUBLE,
+    discount_percent  DOUBLE,
+    rating            FLOAT,
+    rating_total      INTEGER,
+    img_primary       TEXT,
+    img_count         INTEGER
+)
+CLUSTERED BY (product_id);
+""".strip()
 
+REFERENCE_SQLS = [
+    "SELECT ROUND(AVG(price),2) AS avg_price FROM {table}",
+    "SELECT ROUND(AVG(discount_percent),2) AS avg_discount_pct FROM {table}",
+    "SELECT brand, COUNT(*) AS items FROM {table} GROUP BY brand ORDER BY items DESC LIMIT 10",
+    "SELECT ROUND(AVG(rating),2) AS avg_rating FROM {table} WHERE rating_total > 0",
+    "SELECT product_id, title, brand, price, mrp, discount_percent, rating, rating_total FROM {table} ORDER BY rating_total DESC LIMIT 50",
+]
 
-def create_brand_price_discount_chart(df):
-    """
-    Create a bar chart showing brand vs average price and discount.
-    Returns a Plotly Figure.
-    """
-    if 'brand' not in df.columns:
-        return None
-    # Aggregate by brand
-    agg = df.groupby('brand').agg(
-        avg_price=('price', 'mean'),
-        avg_discount=('discount_percent', 'mean'),
-        count=('price', 'count')
-    ).reset_index()
-    top_brands = agg.sort_values(by='count', ascending=False).head(10)
-
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=top_brands['brand'], y=top_brands['avg_price'],
-        name='Avg Price', marker_color='#1f77b4'  # blue
-    ))
-    fig.add_trace(go.Bar(
-        x=top_brands['brand'], y=top_brands['avg_discount'],
-        name='Avg Discount %', marker_color='#ff7f0e', yaxis='y2'  # orange
-    ))
-    fig.update_layout(
-        title="Top 10 Brands: Average Price and Average Discount",
-        xaxis_tickangle=-45,
-        yaxis=dict(title="Average Price (₹)"),
-        yaxis2=dict(title="Average Discount (%)",
-                    overlaying='y', side='right'),
-        legend=dict(x=0.5, y=1.1, orientation='h')
-    )
-    return fig
+# -------------------------------------------------
+# HELPERS
+# -------------------------------------------------
 
 
 @st.cache_data(ttl=300)
@@ -63,53 +58,40 @@ def q(sql: str) -> pd.DataFrame:
     return pd.DataFrame(res or [])
 
 
-# ---------- App ----------
-st.image("logo.png", width=250)  # Adjust width as needed
-
-st.set_page_config(page_title="Trent Agentic AI Demo", layout="wide")
-st.title("Product Trends Agentic AI: Data → Deployment")
-
-# ---------- Filters ----------
-
-
 def sql_quote(val: str) -> str:
     return "'" + val.replace("'", "''") + "'"
 
 
+# -------------------------------------------------
+# LAYOUT CONFIG
+# -------------------------------------------------
+st.set_page_config(page_title="Trent Agentic AI Demo", layout="wide")
+st.image("logo.png", width=250)
+st.title("Product Trends Agentic AI: Data → Deployment")
+
+# -------------------------------------------------
+# FILTERS
+# -------------------------------------------------
 brands_df = q(f"SELECT DISTINCT brand FROM {SCHEMA_TABLE} ORDER BY 1")
 brands = brands_df["brand"].dropna().tolist() if not brands_df.empty else []
 
-# Create columns
 c1, c2, c3 = st.columns([1, 2, 2])
-
-# Discount sliders
 min_disc, max_disc = c1.slider("Discount % Range", 0, 90, (0, 90))
-
-# Rating sliders
 min_rating, max_rating = c2.slider("Rating Range", 0.0, 5.0, (0.0, 5.0), 0.1)
-
-# Optional: Brand filter (if you want users to select brands)
 selected_brands = c3.multiselect("Brands", brands, default=brands)
 
-# Build WHERE clause
 where_clauses = ["1=1"]
-
-# Brand filtering
 if selected_brands:
     brand_csv = ",".join(sql_quote(b) for b in selected_brands)
     where_clauses.append(f"brand IN ({brand_csv})")
-
-# Discount filtering
 where_clauses.append(
     f"discount_percent BETWEEN {int(min_disc)} AND {int(max_disc)}")
-
-# Rating filtering
 where_clauses.append(f"rating BETWEEN {min_rating} AND {max_rating}")
-
-# Final WHERE clause
 where_clause = " AND ".join(where_clauses)
 
-# ---------- KPIs ----------
+# -------------------------------------------------
+# KPIs
+# -------------------------------------------------
 kpis_df = q(f"""
     SELECT
       COUNT(*) AS products,
@@ -123,55 +105,27 @@ kpis_df = q(f"""
 
 kpis = kpis_df.iloc[0] if not kpis_df.empty else pd.Series(
     {"products": 0, "avg_price": 0, "avg_mrp": 0,
-     "avg_discount_pct": 0, "no_discount_items": 0}
+        "avg_discount_pct": 0, "no_discount_items": 0}
 )
 
 k1, k2, k3, k4, k5 = st.columns(5)
-
-with k1.container(border=True):
+with k1:
     st.metric("Products", int(kpis["products"]))
-with k2.container(border=True):
+with k2:
     st.metric("Avg Price", kpis["avg_price"])
-with k3.container(border=True):
+with k3:
     st.metric("Avg MRP", kpis["avg_mrp"])
-with k4.container(border=True):
+with k4:
     st.metric("Avg Discount %", kpis["avg_discount_pct"])
-with k5.container(border=True):
+with k5:
     st.metric("No-discount Items", int(kpis["no_discount_items"]))
 
-# ---------- Top discounted & rated ----------
-top_discounted = q(f"""
-    SELECT product_id, title, brand, price, mrp, discount_percent, rating, rating_total
-    FROM {SCHEMA_TABLE}
-    WHERE {where_clause}
-    ORDER BY discount_percent DESC, price ASC
-    LIMIT 50
-""")
-top_rated = q(f"""
-    SELECT product_id, title, brand, rating, rating_total, price, mrp, discount_percent
-    FROM {SCHEMA_TABLE}
-    WHERE rating_total >= 100 AND rating >= 4 AND {where_clause}
-    ORDER BY rating DESC, rating_total DESC
-    LIMIT 50
-""")
-
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("Top discounted (50)")
-    st.dataframe(top_discounted, use_container_width=True, hide_index=True)
-with col2:
-    st.subheader("Top rated by volume (50)")
-    st.dataframe(top_rated, use_container_width=True, hide_index=True)
-
-st.caption(
-    "Powered by MCP (SELECT-only). No writes, no schema changes from the app.")
-
-# ---------- Top Brands ----------
+# -------------------------------------------------
+# CORE CHARTS
+# -------------------------------------------------
 st.subheader("Top Brands (5)")
 t_brands = q(f"""
-    SELECT brand,
-           COUNT(*) AS product_count,
-           AVG(mrp) AS mrp
+    SELECT brand, COUNT(*) AS product_count, AVG(mrp) AS mrp
     FROM {SCHEMA_TABLE}
     WHERE {where_clause}
     GROUP BY brand
@@ -180,54 +134,42 @@ t_brands = q(f"""
 """)
 
 if not t_brands.empty:
-    t_brands = t_brands.sort_values(by='product_count', ascending=False)
     fig = go.Figure(data=[
         go.Bar(name='Product Count',
-               # green
                x=t_brands['brand'], y=t_brands['product_count'], marker_color='#2ca02c'),
         go.Bar(name='Avg. MRP', x=t_brands['brand'],
-               y=t_brands['mrp'], marker_color='#d62728')  # red
+               y=t_brands['mrp'], marker_color='#d62728')
     ])
     fig.update_layout(barmode='group', xaxis_title='Brand',
                       yaxis_title='Value', legend_title='Metric', height=500)
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.info("No data for top brands with the current filters.")
-st.subheader("Brand: Avg Price vs Avg Discount")
+    st.info("No data for top brands with current filters.")
 
+# -------------------------------------------------
+# BRAND METRICS
+# -------------------------------------------------
+st.subheader("Brand: Avg Price vs Avg Discount")
 brand_metrics_df = q(f"""
-    SELECT 
-        brand, 
-        AVG(price) AS avg_price, 
-        AVG(discount_percent) AS avg_discount_percent
+    SELECT brand, AVG(price) AS avg_price, AVG(discount_percent) AS avg_discount_percent
     FROM {SCHEMA_TABLE}
-    WHERE brand IS NOT NULL 
-      AND price IS NOT NULL 
-      AND discount_percent IS NOT NULL
-      AND {where_clause}
+    WHERE brand IS NOT NULL AND price IS NOT NULL AND discount_percent IS NOT NULL AND {where_clause}
     GROUP BY brand
 """)
-
 if not brand_metrics_df.empty:
-    fig = px.bar(
-        brand_metrics_df,
-        x="brand",
-        y=["avg_price", "avg_discount_percent"],
-        barmode="group",
-        title="Average Price vs Discount % by Brand",
-        labels={"value": "Value", "brand": "Brand", "variable": "Metric"},
-        color_discrete_sequence=px.colors.qualitative.Set2  # nice distinct colors
-    )
-    fig.update_layout(
-        xaxis_tickangle=-45,
-        height=500,
-        legend_title="Metric"
-    )
+    fig = px.bar(brand_metrics_df, x="brand", y=["avg_price", "avg_discount_percent"],
+                 barmode="group", title="Average Price vs Discount % by Brand",
+                 labels={"value": "Value", "brand": "Brand",
+                         "variable": "Metric"},
+                 color_discrete_sequence=px.colors.qualitative.Set2)
+    fig.update_layout(xaxis_tickangle=-45, height=500, legend_title="Metric")
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("No brand metrics available.")
 
-# ---------- Discount bands ----------
+# -------------------------------------------------
+# DISCOUNT BANDS
+# -------------------------------------------------
 bands = q(f"""
     SELECT band, COUNT(*) AS items
     FROM (
@@ -244,19 +186,17 @@ bands = q(f"""
     GROUP BY band
     ORDER BY items DESC
 """)
-
 st.subheader("Discount bands")
 if not bands.empty:
-    fig = px.bar(
-        bands, x="items", y="band", orientation="h",
-        title="Items per Discount Band",
-        color="band", color_discrete_sequence=px.colors.qualitative.Set2
-    )
+    fig = px.bar(bands, x="items", y="band", orientation="h", title="Items per Discount Band",
+                 color="band", color_discrete_sequence=px.colors.qualitative.Set2)
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.info("No data for discount bands with the current filters.")
+    st.info("No data for discount bands.")
 
-# ---------- Price bucket distribution ----------
+# -------------------------------------------------
+# PRICE BUCKETS
+# -------------------------------------------------
 price_buckets = q(f"""
     SELECT CASE
       WHEN price < 500 THEN '<500'
@@ -272,40 +212,60 @@ price_buckets = q(f"""
     GROUP BY price_bucket
     ORDER BY items DESC
 """)
-
-
 c4, c5 = st.columns(2)
 with c4:
     st.subheader("Price buckets")
     if not price_buckets.empty:
-        fig1 = px.bar(
-            price_buckets, x="price_bucket", y="items",
-            color="price_bucket", color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(fig1, use_container_width=True)
-    else:
-        st.info("No data for price buckets with the current filters.")
+        st.plotly_chart(px.bar(price_buckets, x="price_bucket", y="items",
+                               color="price_bucket", color_discrete_sequence=px.colors.qualitative.Pastel),
+                        use_container_width=True)
 with c5:
     st.subheader("Avg discount by price bucket")
     if not price_buckets.empty:
-        fig2 = px.bar(
-            price_buckets, x="price_bucket", y="avg_discount_pct",
-            color="price_bucket", color_discrete_sequence=px.colors.qualitative.Bold
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-    else:
-        st.info("No data for avg discount by bucket with the current filters.")
+        st.plotly_chart(px.bar(price_buckets, x="price_bucket", y="avg_discount_pct",
+                               color="price_bucket", color_discrete_sequence=px.colors.qualitative.Bold),
+                        use_container_width=True)
 
 # =====================================================================
-# Multi-pack insights viewer
+# 🤖 Autonomous AI-Generated Insights (Reasoning Output)
 # =====================================================================
+st.divider()
+st.subheader("Autonomous AI-Generated Insights")
+
+sample_df = q(f"SELECT * FROM {SCHEMA_TABLE} LIMIT 10")
+schema_info = {
+    "columns": list(sample_df.columns),
+    "preview_markdown": sample_df.head(5).to_markdown(index=False),
+    "summary_markdown": "Streamlit live call — generating autonomous KPIs based on schema."
+}
+llm = ChatOllama(model="mistral")
+
+if st.button("Generate Live AI Insights"):
+    with st.spinner("Reasoning over data and generating SQLs..."):
+        results = dynamic_insights_from_schema(
+            table_name=SCHEMA_TABLE,
+            table_ddl=TABLE_DDL,
+            schema_info=schema_info,
+            reference_sqls=[q.format(table=SCHEMA_TABLE)
+                            for q in REFERENCE_SQLS],
+        )
+
+    if not results:
+        st.warning("No AI insights returned.")
+    else:
+        st.success(f"Generated {len(results)} insights dynamically!")
+        for name, df in results.items():
+            st.markdown(f"### {name.replace('_', ' ').title()}")
+            st.dataframe(df, use_container_width=True, hide_index=True)
+
+# =====================================================================
+# Insights Pack Section (manual insights)
+# =====================================================================
+st.divider()
+st.subheader("Insights Packs (Manual Generator)")
+
 PACKS_DIR = Path("analytics_out/packs")
 PACKS_DIR.mkdir(parents=True, exist_ok=True)
-
-st.divider()
-st.subheader("Insights Packs")
-
-st.title("Dynamic Insight Packs")
 
 with st.form("filters_form"):
     st.subheader("Filter products")
@@ -322,7 +282,6 @@ with st.form("filters_form"):
         max_discount = st.slider("Max Discount %", 0, 100, 100)
         price_range = st.slider("Price Between", 0.0, 5000.0, (0.0, 5000.0))
         mrp_range = st.slider("MRP Between", 0.0, 5000.0, (0.0, 5000.0))
-
     submitted = st.form_submit_button("Run Insights")
 
 if submitted:
