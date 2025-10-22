@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 ### 3️⃣ Run the Watchdong 
 ```bash
-python watchdog_.py
+python3 watchdog_.py
 ```
 
 ### 4️⃣ Move `_sample_products.csv` to `csv_folder/`
