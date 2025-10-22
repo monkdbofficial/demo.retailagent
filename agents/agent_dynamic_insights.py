@@ -27,77 +27,79 @@ def dynamic_insights_from_schema(
     table_ddl: str,
     schema_info: Dict,
     reference_sqls: List[str],
+    goal: str = "Generate general insights",
 ):
     """
-    Let the LLM read (1) CSV sample summary, (2) concrete DDL, and (3) reference query moulds,
-    then propose 3–5 SELECT statements to compute KPIs. Executes them via MCP.
+    LLM reads table schema, preview, and goal → generates 3–5 goal-aligned SELECT queries.
+    Executes them safely via MCP → then composes an interpretive summary.
     """
     columns = schema_info.get("columns", [])
     preview_md = schema_info.get("preview_markdown", "")
     summary_md = schema_info.get("summary_markdown", "")
-
     ref_block = "\n".join([f"- {s}" for s in reference_sqls])
 
+    # ---- Step 1: Prompt for insight plan ----
     prompt = f"""
-You are an experienced SQL analyst producing KPIs on a CrateDB/MonkDB table.
+You are an experienced SQL data analyst working with a MonkDB table.
+
+USER GOAL: {goal}
 
 Table name: {table_name}
 
 Table DDL (authoritative):
 {table_ddl}
-CSV sample (first rows) preview:
+
+CSV sample (first few rows):
 {preview_md}
+
 LLM's earlier understanding:
 {summary_md}
 
-Column list (derived from CSV, for quick reference):
+Column list (from CSV):
 {columns}
 
 REFERENCE EXAMPLES (style/mould to follow; use same table and column names):
 {ref_block}
 
-Now produce 3–5 useful SELECT queries for KPIs/insights on {table_name}.
+Now produce 3–5 useful SELECT queries for KPIs/insights on {table_name}
+that best align with the goal: "{goal}".
+
 RULES (strict):
 - Use only this table: {table_name}
 - SELECT-only. No INSERT/UPDATE/DELETE/DDL.
-- Prefer simple aggregates or ranked lists; include LIMIT where appropriate.
-- Only use columns that exist in the DDL.
-- Keep queries executable as-is (no placeholders).
-- Output JSON ONLY in this exact structure (no prose outside JSON):
+- Prefer aggregates, rankings, or correlations.
+- Use existing columns only.
+- Include LIMIT where appropriate.
+- Output JSON ONLY in this format:
 
 [
   {{ "name": "kpi_slug", "sql": "SELECT ... FROM {table_name} ..." }},
-  {{ "name": "another_kpi", "sql": "SELECT ... FROM {table_name} ..." }}
+  ...
 ]
-    """
-
-    # --- Step 1: Query the LLM ---
+"""
     response = llm.invoke(prompt)
     text = (response.content or "").strip()
-
     print("\n=== AUTO-GENERATED INSIGHT PLAN (RAW) ===\n",
           text, "\n=========================================\n")
 
-    # --- Step 2: Parse JSON safely ---
+    # ---- Step 2: Parse JSON safely ----
     plan = []
     try:
         plan = json.loads(text)
         if not isinstance(plan, list):
-            raise ValueError("Expected a JSON list at top level")
-    except Exception as e:
-        print(f"⚠️ LLM response not valid JSON: {e}")
-        # attempt salvage using regex fallback
-        match = re.search(r"\[.*\]", text, re.S)
-        if match:
+            raise ValueError("Expected list")
+    except Exception:
+        m = re.search(r"\[.*\]", text, re.S)
+        if m:
             try:
-                plan = json.loads(match.group(0))
+                plan = json.loads(m.group(0))
             except Exception:
                 plan = []
         if not plan:
-            print("⚠️ Could not recover any valid plan JSON.")
-            return {}
+            print("⚠️ Could not parse valid JSON insight plan.")
+            return {}, ""
 
-    # --- Step 3: Validate & execute ---
+    # ---- Step 3: Execute queries ----
     results = {}
     for item in plan:
         name = item.get("name", "unnamed")
@@ -105,27 +107,40 @@ RULES (strict):
         if not sql:
             continue
 
-        # quick repair for GROUP BY issues (like CrateDB error)
+        # Fix common GROUP BY error from LLM
         if "GROUP BY" in sql and "title" in sql and "SUM(" in sql and "product_id" in sql:
             sql = re.sub(r"GROUP BY\s+\w+",
                          "GROUP BY product_id, title, brand, price", sql)
 
         if not _is_safe_select(sql, table_name):
-            print(f"⛔ Skipping unsafe or invalid SQL for {name}: {sql}")
+            print(f"⛔ Skipping unsafe SQL for {name}")
             continue
 
         print(f"→ Running {name}: {sql}")
         try:
-            df_res = pd.DataFrame(run_select_query(sql))
-            results[name] = df_res
-
-            try:
-                print(df_res.head(5).to_string(index=False))
-            except Exception:
-                print(f"(rows: {len(df_res)})")
-
+            df = pd.DataFrame(run_select_query(sql))
+            results[name] = df
+            print(df.head(5).to_string(index=False))
         except Exception as e:
             print(f"❌ Failed to execute {name}: {e}")
 
     print(f"✅ Generated dynamic insights for {len(results)} metrics.")
-    return results
+
+    # ---- Step 4: Reflective summary ----
+    summary_input = "\n\n".join(
+        f"{k}:\n{v.head(5).to_markdown(index=False)}" for k, v in results.items() if not v.empty
+    )
+    summary_prompt = f"""
+You are an analytics reasoning assistant.
+You generated the following KPI tables for goal: {goal}.
+Explain in 3–5 concise bullet points what these results mean.
+Mention key trends, anomalies, and their link to the goal.
+
+Data snapshot:
+{summary_input}
+"""
+    reflection = llm.invoke(summary_prompt)
+    summary_text = reflection.content.strip(
+    ) if reflection and reflection.content else "No summary available."
+
+    return results, summary_text
