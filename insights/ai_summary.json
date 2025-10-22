@@ -1,0 +1,278 @@
+{
+  "generated_at": "2025-10-22T11:59:55.142415",
+  "summary_stats": {
+    "total_products": 100000.0,
+    "total_brands": 6.0,
+    "avg_price": 1689.7804153999998,
+    "max_price": 9050.0,
+    "min_price": 368.0,
+    "avg_rating": 0.32339330005554484,
+    "avg_discount": 21.2185359
+  },
+  "top_brands": [
+    {
+      "brand": "20Dresses",
+      "product_count": 65970,
+      "avg_rating": 0.09578353787405447,
+      "avg_price": 1239.8406430195544
+    },
+    {
+      "brand": "4711",
+      "product_count": 13005,
+      "avg_rating": 0.8290772788767996,
+      "avg_price": 3256.76753171857
+    },
+    {
+      "brand": "9shines Label",
+      "product_count": 8957,
+      "avg_rating": 0.09595288589274004,
+      "avg_price": 1526.1943105950652
+    },
+    {
+      "brand": "A Homes Grace",
+      "product_count": 7018,
+      "avg_rating": 0.8284283265674232,
+      "avg_price": 3150.863455400399
+    },
+    {
+      "brand": "4WRD by Dressberry",
+      "product_count": 3033,
+      "avg_rating": 0.8748104198630979,
+      "avg_price": 1346.8127761292449
+    },
+    {
+      "brand": "250 DESIGNS",
+      "product_count": 2017,
+      "avg_rating": 2.9309271204631164,
+      "avg_price": 2460.945587506197
+    }
+  ],
+  "rating_distribution": [
+    {
+      "rating_bucket": 0,
+      "count": 26612
+    },
+    {
+      "rating_bucket": 1,
+      "count": 387
+    },
+    {
+      "rating_bucket": 2,
+      "count": 146
+    },
+    {
+      "rating_bucket": 3,
+      "count": 1413
+    },
+    {
+      "rating_bucket": 4,
+      "count": 3384
+    },
+    {
+      "rating_bucket": 5,
+      "count": 586
+    }
+  ],
+  "product_segments": [
+    {
+      "price_segment": "Budget",
+      "rating_segment": "Low Rated",
+      "count": 4912,
+      "avg_price": 854.4882878664495,
+      "avg_rating": 0.32622556964539184
+    },
+    {
+      "price_segment": "Budget",
+      "rating_segment": "Medium Rated",
+      "count": 17,
+      "avg_price": 923.9623529411765,
+      "avg_rating": 3.3676470588235294
+    },
+    {
+      "price_segment": "Mid-Range",
+      "rating_segment": "High Rated",
+      "count": 3032,
+      "avg_price": 2217.9715039577836,
+      "avg_rating": 4.550006600829102
+    },
+    {
+      "price_segment": "Mid-Range",
+      "rating_segment": "Low Rated",
+      "count": 19826,
+      "avg_price": 1475.7220316755775,
+      "avg_rating": 0.34159991903016157
+    },
+    {
+      "price_segment": "Mid-Range",
+      "rating_segment": "Medium Rated",
+      "count": 1309,
+      "avg_price": 1915.8144766997707,
+      "avg_rating": 3.619419407899185
+    },
+    {
+      "price_segment": "Premium",
+      "rating_segment": "High Rated",
+      "count": 908,
+      "avg_price": 3759.212665198238,
+      "avg_rating": 4.583281932948444
+    },
+    {
+      "price_segment": "Premium",
+      "rating_segment": "Low Rated",
+      "count": 2407,
+      "avg_price": 4381.648201080183,
+      "avg_rating": 0.31921478995134783
+    },
+    {
+      "price_segment": "Premium",
+      "rating_segment": "Medium Rated",
+      "count": 117,
+      "avg_price": 3686.788376068376,
+      "avg_rating": 3.7922222186357546
+    }
+  ],
+  "outliers": [
+    {
+      "product_id": 80564,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 4357",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 339249,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 6133",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 119404,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 5738",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 252211,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 3998",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 430707,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 3560",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 119059,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 8312",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 404535,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 1487",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.1
+    },
+    {
+      "product_id": 156162,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 2327",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.68
+    },
+    {
+      "product_id": 431197,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 3159",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 471663,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 2178",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.81
+    },
+    {
+      "product_id": 150661,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 9969",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.11
+    },
+    {
+      "product_id": 66898,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 5098",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 200221,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 1414",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 453887,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 7011",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 167973,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 9696",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 473788,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 6769",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.15
+    },
+    {
+      "product_id": 495425,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 8721",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.27
+    },
+    {
+      "product_id": 185980,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 6486",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.61
+    },
+    {
+      "product_id": 519599,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 6674",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    },
+    {
+      "product_id": 364934,
+      "title": "Men Eau De Cologne 800ml \u2022 Style 7742",
+      "brand": "4711",
+      "price": 9050.0,
+      "rating": 0.0
+    }
+  ],
+  "ai_insights": "1. Key Findings:\n   - A high number of total products (100,000) suggests a large product catalog.\n   - The average price ($1689.78) indicates relatively expensive items.\n   - Low average rating (0.32) shows customer satisfaction is a concern.\n   - Significant average discount (21.22%) implies that frequent sales might be necessary to boost sales.\n\n2. Trends and Patterns:\n   - The presence of only 6 top brands indicates a concentration in the market.\n   - The top three brands, \"20Dresses\", \"4711\", and \"9shines Label\", account for a considerable portion of the total products.\n   - The existence of outlier_count (20) suggests anomalies in the data that may need attention.\n\n3. Potential Opportunities or Concerns:\n   - Opportunity: Focusing on the top 3 brands could improve sales and customer loyalty.\n   - Concern: Low average rating indicates poor customer satisfaction, which might impact retention and referrals.\n   - Opportunity/Concern: The high discount rate suggests potential for price optimization or quality improvement to increase product value.\n\n4. Actionable Recommendations:\n   - Improve customer service and product quality to boost ratings and satisfaction.\n   - Analyze the outliers in the data to understand any unusual patterns or trends that may be influencing sales.\n   - Consider offering targeted promotions for the top 3 brands to capitalize on their popularity.\n   - Explore price adjustments or quality improvements to reduce the need for frequent discounts.\n   - Diversify the brand portfolio to decrease market concentration and potentially tap into new customer segments.",
+  "executive_summary": "Executive Summary:\n\nThe product analytics report for Q4 2025 highlights several key findings that offer valuable insights into our current market position. With a total of 100,000 products, our catalog is expansive, but the average price point of $1689.78 and an average rating of 0.32 indicate room for improvement in both product pricing and customer satisfaction.\n\nSignificant discounts averaging 21.22% suggest that frequent sales may be necessary to boost sales. It's worth noting that only six brands dominate the market, with \"20Dresses,\" \"4711,\" and \"9shines Label\" accounting for a considerable portion of our total products.\n\nThe implications for business are clear: there is potential to focus on these top 3 brands to improve sales and customer loyalty. However, the low average rating raises concerns about poor customer satisfaction, which could impact retention and referrals. The high discount rate also suggests an opportunity for price optimization or quality improvement to increase product value.\n\nTo capitalize on these opportunities, we recommend improving customer service and product quality to boost ratings and satisfaction. Analyzing the identified outliers in the data will help us understand any unusual patterns or trends that may be influencing sales. Offering targeted promotions for our top 3 brands could further drive sales, while exploring price adjustments or quality improvements can reduce the need for frequent discounts. Lastly, diversifying our brand portfolio may help decrease market concentration and tap into new customer segments.\n\nBy addressing these findings, we aim to enhance our product offerings, improve customer satisfaction, and ultimately increase overall sales performance."
+}
